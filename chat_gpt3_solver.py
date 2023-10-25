@@ -2,6 +2,7 @@
 
 import logging
 import os
+import time
 from datetime import datetime
 
 import openai
@@ -56,18 +57,40 @@ class ChatGPT3Solver(BaseSolver):
         """
         self.conversation_history.append({"role": "user", "content": input_str})
 
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo", messages=self.conversation_history
-        )
+        while True:
+            try:
+                self.logger.info(f"推論開始: {len(self.conversation_history)}")
+                response = openai.ChatCompletion.create(
+                    model="gpt-3.5-turbo", messages=self.conversation_history
+                )
 
-        response_text = response["choices"][0]["message"]["content"].strip()
-        self.conversation_history.append(
-            {"role": "assistant", "content": response_text}
-        )
-        self.logger.info(f"response_text: {response_text}")
+                if response["choices"][0]["finish_reason"] == "length":
+                    original_size = len(self.conversation_history)
+                    while len(self.conversation_history) > original_size // 2:
+                        self.conversation_history.pop(1)
+                    continue
 
-        selected_index = int(response_text[-2])
-        return selected_index
+                response_text = response["choices"][0]["message"]["content"].strip()
+                self.conversation_history.append(
+                    {"role": "assistant", "content": response_text}
+                )
+                self.logger.info(f"response_text: {response_text}")
+
+                selected_index = int(response_text[-2])
+                return selected_index
+            except ValueError as e:
+                self.logger.error(f"ValueError: {e}")
+                error_str = (
+                    f"最終的な選択は0から{self.machine_num - 1}の数字を1つだけ最終行に[]で囲って出力してください。"
+                )
+                self.conversation_history.append({"role": "user", "content": error_str})
+                time.sleep(1)
+            except openai.error.InvalidRequestError as e:
+                self.logger.error(f"InvalidRequestError: {e}")
+                original_size = len(self.conversation_history)
+                while len(self.conversation_history) > original_size // 2:
+                    self.conversation_history.pop(1)
+                time.sleep(1)
 
     def update(self, selected: int, reward: int) -> None:
         """更新."""
