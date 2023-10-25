@@ -2,26 +2,23 @@
 
 from environment import NormalMachine
 
-if __name__ == "__main__":
-    machine_dict = {
-        "A": NormalMachine(60, 10),
-        "B": NormalMachine(40, 20),
-        "C": NormalMachine(20, 30),
-    }
+from random_solver import RandomSolver
 
-    while True:
-        print("wait input: ", end="", flush=True)
-        a = input()
-        if a == "q":
-            break
-        v = None
-        if a == "A":
-            v = machine_dict["A"].sample()
-        elif a == "B":
-            v = machine_dict["B"].sample()
-        elif a == "C":
-            v = machine_dict["C"].sample()
-        else:
-            print(f"invalid input: {a}")
-            continue
-        print(f"あなたは{a}を選び、スコアは{v}でした")
+if __name__ == "__main__":
+    machine_list = [
+        NormalMachine(mean=10, stddev=5),
+        NormalMachine(mean=20, stddev=5),
+        NormalMachine(mean=30, stddev=5),
+    ]
+    solver = RandomSolver(len(machine_list))
+    reward_sum = 0
+    TRIAL_NUM = 100
+    for _ in range(TRIAL_NUM):
+        selected = solver.select()
+        reward = machine_list[selected].sample()
+        solver.update(selected, reward)
+        print(f"selected: {selected}, reward: {reward}")
+        reward_sum += reward
+
+    reward_average = reward_sum / TRIAL_NUM
+    print(f"reward_average: {reward_average:.1f}")
