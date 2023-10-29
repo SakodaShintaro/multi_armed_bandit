@@ -42,7 +42,7 @@ while True:
         input_ids.to(device=model.device),
         attention_mask=attention_mask.to(device=model.device),
         max_new_tokens=512,
-        temperature=1,
+        temperature=0.1,
         top_p=0.95,
         do_sample=True,
         pad_token_id=tokenizer.eos_token_id,
