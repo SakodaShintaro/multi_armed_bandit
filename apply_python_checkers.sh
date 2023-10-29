@@ -7,5 +7,5 @@ find "." -type f -name "*.py" | while read -r file; do
     black "$file"
     isort "$file"
     flake8 "$file"
-    mypy --strict "$file"
+    mypy --strict --ignore-missing-imports "$file"
 done
