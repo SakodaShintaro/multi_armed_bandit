@@ -46,13 +46,16 @@ user_inputs = {"user_query": "与えられたことわざの意味を小学生�
 prompt = build_prompt(**user_inputs)
 
 input_ids = tokenizer.encode(prompt, add_special_tokens=False, return_tensors="pt")
+attention_mask = torch.ones(input_ids.shape, device=input_ids.device)
 
 tokens = model.generate(
     input_ids.to(device=model.device),
+    attention_mask=attention_mask.to(device=model.device),
     max_new_tokens=512,
     temperature=1,
     top_p=0.95,
     do_sample=True,
+    pad_token_id=tokenizer.eos_token_id,
 )
 
 out = tokenizer.decode(
