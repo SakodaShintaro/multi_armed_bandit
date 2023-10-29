@@ -7,6 +7,7 @@ from chat_gpt3_solver import ChatGPT3Solver
 from environment import NormalMachine
 from epsilon_greedy_solver import EpsilonGreedySolver
 from random_solver import RandomSolver
+from stablelm_solver import StableLMSolver
 
 
 def parse_args() -> argparse.Namespace:
@@ -19,8 +20,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "solver_type",
         type=str,
-        default="epsilon_greedy",
-        choices=["random", "epsilon_greedy", "chat_gpt3"],
+        choices=["random", "epsilon_greedy", "chat_gpt3", "stable_lm"],
     )
     return parser.parse_args()
 
@@ -41,6 +41,8 @@ if __name__ == "__main__":
         solver = EpsilonGreedySolver(len(machine_list))
     elif solver_type == "chat_gpt3":
         solver = ChatGPT3Solver(len(machine_list), TRIAL_NUM)
+    elif solver_type == "stable_lm":
+        solver = StableLMSolver(len(machine_list), TRIAL_NUM)
     else:
         raise ValueError(f"Unknown solver_type: {solver_type}")
     reward_sum = 0
